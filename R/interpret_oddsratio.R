@@ -4,6 +4,7 @@
 #' @param rules Can be "`chen2010"` (default), `"cohen1988"` (through
 #'   transformation to standardized difference, see [oddsratio_to_d()]) or custom set
 #'   of [rules()].
+#' @param p0 Baseline risk
 #' @param log Are the provided values log odds ratio.
 #' @inheritParams interpret
 #'
@@ -40,7 +41,7 @@
 #'
 #' @keywords interpreters
 #' @export
-interpret_oddsratio <- function(OR, rules = "chen2010", log = FALSE, ...) {
+interpret_oddsratio <- function(OR, p0 = 0.01, rules = "chen2010", log = FALSE, ...) {
   if (log) {
     f_transform <- function(.x) exp(abs(.x))
   } else {
@@ -53,11 +54,23 @@ interpret_oddsratio <- function(OR, rules = "chen2010", log = FALSE, ...) {
     return(interpret_cohens_d(d, rules = rules))
   }
 
+  if (is.numeric(p0) && p0 >= 0 && p0 <= 1) {
+    calculate_thresholds <- function(p0, d = c(0.2,0.5,0.8)) {
+      z0 <- qnorm(p0)
+      z1 <- z0 + d
+      p1 <- pnorm(z1)
+      or <- (p1*(1-p0))/(p0*(1-p1))
+      return(or)
+    }
+
+    thresholds <- calculate_thresholds(p0)
+  }
+
   rules <- .match.rules(
     rules,
     list(
-      chen2010 = rules(c(1.68, 3.47, 6.71), c("very small", "small", "medium", "large"),
-        name = "chen2010", right = FALSE
+      chen2010 = rules(thresholds, c("very small", "small", "medium", "large"),
+        name = paste("chen2010; baseline risk:", p0), right = FALSE
       ),
       cohen1988 = NA # for correct error msg
     )
