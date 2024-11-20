@@ -75,9 +75,9 @@ test_that("interpret_rope", {
 test_that("interpret_oddsratio", {
   expect_equal(interpret_oddsratio(2)[1], "small")
   expect_equal(interpret_oddsratio(c(1, 3))[1:2], c("very small", "small"))
-  expect_equal(interpret_oddsratio(c(1, 3), "cohen1988")[1:2], c("very small", "medium"))
-  expect_equal(interpret_oddsratio(0.6, rules(c(0.5), c("A", "B")))[1], "B")
-  expect_error(interpret_oddsratio(0.6, "DUPA"), "must be")
+  expect_equal(interpret_oddsratio(c(1, 3), rules = "cohen1988")[1:2], c("very small", "medium"))
+  expect_equal(interpret_oddsratio(0.6, rules = rules(c(0.5), c("A", "B")))[1], "B")
+  expect_error(interpret_oddsratio(0.6, rules = "DUPA"), "must be")
 })
 
 
